@@ -196,7 +196,22 @@ const addProperty = function (property) {
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
     ) RETURNING *;`;
 
-    const propertyValues = Object.values(property);
+    const propertyValues = [
+      property.owner_id,
+      property.title,
+      property.description,
+      property.thumbnail_photo_url,
+      property.cover_photo_url,
+      property.cost_per_night,
+      property.street,
+      property.city,
+      property.province,
+      property.post_code,
+      property.country,
+      property.parking_spaces,
+      property.number_of_bathrooms,
+      property.number_of_bedrooms
+      ];
 
   return pool
     .query(query, propertyValues)

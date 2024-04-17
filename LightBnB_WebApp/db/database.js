@@ -65,11 +65,9 @@ const getUserWithId = function (id) {
  */
 const addUser = function (user) {
   let query = "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *"
-  console.log(user);
   return pool
     .query(query, [user.name, user.email, user.password])
     .then((result) => {
-      console.log("result:", result.rows);
       if (result.rows.length > 0) { // Check if user was found
         return Promise.resolve(result.rows[0]);
       } else {
@@ -90,7 +88,24 @@ const addUser = function (user) {
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = function (guest_id, limit = 10) {
-  return getAllProperties(null, 2);
+  let sql = `SELECT reservations.id, properties.*, reservations.start_date, avg(rating) as average_rating
+  FROM reservations
+  JOIN properties ON reservations.property_id = properties.id
+  JOIN property_reviews ON properties.id = property_reviews.property_id
+  WHERE reservations.guest_id = $1
+  GROUP BY properties.id, reservations.id
+  ORDER BY reservations.start_date
+  LIMIT $2;`;
+  return pool
+    .query(
+      sql,
+      [guest_id, limit])
+    .then((result) => {
+      return Promise.resolve(result.rows);
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
 };
 
 /// Properties
@@ -110,7 +125,7 @@ const getAllProperties = (options, limit = 10) => {
       [limit])
     .then((result) => {
       console.log(result.rows);
-      return result.rows;
+      return Promise.resolve(result.rows);
     })
     .catch((err) => {
       console.log(err.message);

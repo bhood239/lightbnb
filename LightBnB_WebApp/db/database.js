@@ -7,9 +7,6 @@ const pool = new Pool({
   database: "lightbnb",
 });
 
-const properties = require("./json/properties.json");
-const users = require("./json/users.json");
-
 /// Users
 
 /**
@@ -17,9 +14,9 @@ const users = require("./json/users.json");
  * @param {String} email The email of the user.
  * @return {Promise<{}>} A promise to the user.
  */
-const getUserWithEmail = function (email) {
-  let query = "SELECT * FROM users WHERE users.email = $1"
 
+const getUserWithEmail = function(email) {
+  let query = "SELECT * FROM users WHERE users.email = $1";
   return pool
     .query(query, [email])
     .then((result) => {
@@ -40,9 +37,9 @@ const getUserWithEmail = function (email) {
  * @param {string} id The id of the user.
  * @return {Promise<{}>} A promise to the user.
  */
-const getUserWithId = function (id) {
-  let query = "SELECT * FROM users WHERE users.id = $1"
 
+const getUserWithId = function(id) {
+  let query = "SELECT * FROM users WHERE users.id = $1";
   return pool
     .query(query, [id])
     .then((result) => {
@@ -63,8 +60,9 @@ const getUserWithId = function (id) {
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
-const addUser = function (user) {
-  let query = "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *"
+
+const addUser = function(user) {
+  let query = "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *";
   return pool
     .query(query, [user.name, user.email, user.password])
     .then((result) => {
@@ -87,7 +85,8 @@ const addUser = function (user) {
  * @param {string} guest_id The id of the user.
  * @return {Promise<[{}]>} A promise to the reservations.
  */
-const getAllReservations = function (guest_id, limit = 10) {
+
+const getAllReservations = function(guest_id, limit = 10) {
   let query = `SELECT reservations.id, properties.*, reservations.start_date, avg(rating) as average_rating
   FROM reservations
   JOIN properties ON reservations.property_id = properties.id
@@ -119,14 +118,11 @@ const getAllReservations = function (guest_id, limit = 10) {
  */
 
 const getAllProperties = (options, limit = 10) => {
-
   const queryParams = [];
-
   let query = `SELECT properties.*, avg(property_reviews.rating) as average_rating
   FROM properties
   JOIN property_reviews ON properties.id = property_id
   WHERE 1=1`;
-
   if (options.city) {
     queryParams.push(`%${options.city}%`);
     query += ` AND city LIKE $${queryParams.length}`;
@@ -145,7 +141,6 @@ const getAllProperties = (options, limit = 10) => {
     queryParams.push(`${maximumPrice}`);
     query += ` AND cost_per_night <= $${queryParams.length}`;
   }
-
   query += `
   GROUP BY properties.id
 `;
@@ -153,13 +148,11 @@ const getAllProperties = (options, limit = 10) => {
     queryParams.push(options.minimum_rating);
     query += ` HAVING avg(rating) >= $${queryParams.length}`;
   }
-
   queryParams.push(limit);
   query += `
   ORDER BY cost_per_night
   LIMIT $${queryParams.length};
   `;
-
   return pool
     .query(query, queryParams)
     .then((result) => {
@@ -176,7 +169,8 @@ const getAllProperties = (options, limit = 10) => {
  * @param {{}} property An object containing all of the property details.
  * @return {Promise<{}>} A promise to the property.
  */
-const addProperty = function (property) {
+
+const addProperty = function(property) {
   const query = `INSERT INTO properties (
     owner_id, 
     title,
@@ -195,24 +189,22 @@ const addProperty = function (property) {
   ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
     ) RETURNING *;`;
-
     const propertyValues = [
-      property.owner_id,
-      property.title,
-      property.description,
-      property.thumbnail_photo_url,
-      property.cover_photo_url,
-      property.cost_per_night,
-      property.street,
-      property.city,
-      property.province,
-      property.post_code,
-      property.country,
-      property.parking_spaces,
-      property.number_of_bathrooms,
-      property.number_of_bedrooms
-      ];
-
+    property.owner_id,
+    property.title,
+    property.description,
+    property.thumbnail_photo_url,
+    property.cover_photo_url,
+    property.cost_per_night,
+    property.street,
+    property.city,
+    property.province,
+    property.post_code,
+    property.country,
+    property.parking_spaces,
+    property.number_of_bathrooms,
+    property.number_of_bedrooms
+    ];
   return pool
     .query(query, propertyValues)
     .then((result) => {
